@@ -5,12 +5,20 @@
     display: flex;
     justify-content: center;
 }
+#main-sections {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #f0f0f0;
+    gap: 8px;
+}
 .section{
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #020314;
+    background-color: #ffffff;
 }
 .container {
     width: 400px;
@@ -19,12 +27,28 @@
 }
 
 /*note*/
+#note-section {
+    display: flex;
+    flex-direction: column;
+}
 .noteDiv{
     height: 100%;
 }
-#note {
-    height: 100%;
-    width: 100%;
+#note-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px;
+}
+#note-btns .btn {
+    border: .5px solid gray;
+    background-color: #ffffff;
+    text-align: center;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+}
+#note-buttons .btn:hover {
+    background-color: lightgray;
 }
 
 /*Calculator*/
@@ -42,13 +66,13 @@
     font-family: 'courier', serif;
     background-color: #ffffff;
 }
-.btns {
+#calculator-btns {
     display: grid;
     border: 1px;
     border-top: 1px solid #999;
     grid-template-columns: 1fr 1fr 1fr 1fr;
 }
-.btn {
+#calculator-btns .btn {
     border: .5px solid gray;
     line-height: 100px;
     text-align: center;
@@ -71,7 +95,7 @@
 #equal:hover{
     background-color: blue;
 }
-#clear:hover{
+#all-clear:hover {
     background-color: red;
 }
 .num {

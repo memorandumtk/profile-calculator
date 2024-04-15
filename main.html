@@ -1,54 +1,65 @@
 <!--https://www.scaler.com/topics/html-calculator-code/-->
 <!DOCTYPE html>
 <html lang="en-US">
+
 <head>
     <title>Calculator</title>
     <link rel="stylesheet" href="./static/css/main.css">
 </head>
+
 <body>
 
-<div class="main">
-    <!--Note section-->
-    <section class="section">
-        <div class="container">
-            <div class="note-div">
-                <ul class="note-ul">
-<!--                   <li class="note-li">1 + 1 = 2  This is an example.</li> -->
-                </ul>
-            </div>
-        </div>
-    </section>
+    <div class="main">
 
-    <!--Calculator section-->
-    <section class="section">
-        <div class="container">
-            <div id="formula">0</div>
-            <div id="result"></div>
-            <div class="btns">
-                <button class="btn" id="all-clear">AC</button>
-                <button class="btn" id="clear">C</button>
-                <button class="btn">%</button>
-                <button class="btn">÷</button>
-                <button class="btn num">7</button>
-                <button class="btn num">8</button>
-                <button class="btn num">9</button>
-                <button class="btn">×</button>
-                <button class="btn num">4</button>
-                <button class="btn num">5</button>
-                <button class="btn num">6</button>
-                <button class="btn">+</button>
-                <button class="btn num">1</button>
-                <button class="btn num">2</button>
-                <button class="btn num">3</button>
-                <button class="btn">-</button>
-                <button class="btn num">0</button>
-                <button class="btn" id="dot">.</button>
-                <button class="btn" id="equal"><strong>=</strong></button>
-            </div>
-        </div>
-    </section>
-</div>
+        <div id="main-sections">
+            <!--Note section-->
+            <section id="note-section" class="section">
+                <div class="container">
+                    <div id="note-btns">
+                        <button class="btn">Note Clear</button>
+                        <button class="btn">Write To Note</button>
+                    </div>
+                    <div id="note-div">
+                        <ul id="note-ul">
+                            <!--<li class="note-li">1 + 1 = 2  This is an example.</li> -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
 
-<script src="./static/js/main.js"></script>
+            <!--Calculator section-->
+            <section class="section">
+                <div class="container">
+                    <div id="formula">0</div>
+                    <div id="result"></div>
+                    <div id="calculator-btns">
+                        <button class="btn" id="all-clear">AC</button>
+                        <button class="btn" id="clear">C</button>
+                        <button class="btn">%</button>
+                        <button class="btn">÷</button>
+                        <button class="btn num">7</button>
+                        <button class="btn num">8</button>
+                        <button class="btn num">9</button>
+                        <button class="btn">×</button>
+                        <button class="btn num">4</button>
+                        <button class="btn num">5</button>
+                        <button class="btn num">6</button>
+                        <button class="btn">+</button>
+                        <button class="btn num">1</button>
+                        <button class="btn num">2</button>
+                        <button class="btn num">3</button>
+                        <button class="btn">-</button>
+                        <button class="btn num">0</button>
+                        <button class="btn" id="dot">.</button>
+                        <button class="btn" id="equal"><strong>=</strong></button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+    <script src="./static/js/main.js" type="module"></script>
 </body>
+
 </html>
