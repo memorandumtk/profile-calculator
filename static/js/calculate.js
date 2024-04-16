@@ -1,3 +1,4 @@
+import { isWriteToNoteEnabled } from "./note.js";
 let formulaDiv = document.getElementById("formula");
 let resultDiv = document.getElementById("result");
 let noteUl = document.getElementById("note-ul");
@@ -22,12 +23,25 @@ function updateDisplay() {
     resultDiv.innerText = resultValue;
 }
 
-// 履歴Arrayに計算式と答えが入ったJSONを格納し、ノートに追加するリストを作成する関数
-function addToHistory(item) {
-    calculationHistory[counter] = item;
+// ノートに追加するリストを作成する関数
+function addToNote (item) {
     let noteLi = document.createElement("li");
     noteLi.innerText = item.formula + " = " + item.result;
     noteUl.appendChild(noteLi);
+}
+
+// 履歴Arrayに計算式と答えが入ったJSONを格納する関数
+function addToHistory(item) {
+    calculationHistory[counter] = item;
+    if (isWriteToNoteEnabled) {
+        addToNote(item);
+    }
+}
+
+// 履歴Arrayをリセットする関数
+function resetHistory() {
+    calculationHistory = [];
+    noteUl.innerHTML = "";
 }
 
 
@@ -129,4 +143,12 @@ function handleButtonClick(buttonText) {
     console.log(calculationHistory)
 }
 
-export { handleButtonClick, updateDisplay };
+
+// 計算機のボタンにEvent Listenerを付ける
+document.querySelectorAll("#calculator-btns .btn").forEach((button) => {
+    button.addEventListener("click", () => {
+        handleButtonClick(button.innerText);
+    });
+});
+
+export { handleButtonClick, updateDisplay, resetHistory };
