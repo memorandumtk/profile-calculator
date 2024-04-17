@@ -1,4 +1,5 @@
 import { isWriteToNoteEnabled } from "./note.js";
+
 let formulaDiv = document.getElementById("formula");
 let resultDiv = document.getElementById("result");
 let noteUl = document.getElementById("note-ul");
@@ -11,11 +12,14 @@ const ALL_CLEAR = "AC";
 const CLEAR = "C";
 
 // グローバル変数
-let currentInput = "";
-let resultValue = "";
-let previeousInput = "";
-let calculationHistory = [];
-let counter = 0;
+let currentInput = ""; // 入力された値を保持する変数（1文字）
+let resultValue = ""; // 計算結果を保持する変数
+let previeousInput = ""; // 直前の式を保持する変数
+let calculationHistory = []; // 計算履歴を保持する変数: Array
+let counter = 0; // 計算履歴のカウンターで履歴のインデックスとしても使用する
+let item = {}; // 計算式と答えと項の履歴を保持する変数: Object
+let terms = []; // 項の履歴を保持する変数: Array
+let term = ""; // 項を保持する変数
 
 // 計算式と答え部分を更新する関数
 function updateDisplay() {
@@ -31,11 +35,14 @@ function addToNote (item) {
 }
 
 // 履歴Arrayに計算式と答えが入ったJSONを格納する関数
-function addToHistory(item) {
+function addToHistory(formula, term = "", result = "") {
+    terms.push(term);
+    item = { formula: formula, terms: terms, result: result };
     calculationHistory[counter] = item;
     if (isWriteToNoteEnabled) {
         addToNote(item);
     }
+    console.log(...calculationHistory)
 }
 
 // 履歴Arrayをリセットする関数
@@ -60,10 +67,10 @@ function handleClear() {
 }
 
 // =ボタンが押された場合の処理
-function handleEqual() {
+function handleEqual(equalSign) {
     try {
         resultValue = eval(currentInput); // Consider a safer math library for production
-        addToHistory({ formula: currentInput, result: resultValue });
+        addToHistory(currentInput, equalSign, resultValue);
     } catch (error) {
         console.log(error);
         resultValue = "ERROR";
@@ -78,26 +85,31 @@ function handleEqual() {
 
 // 演算子が押された場合の処理
 function handleOperators(operator) {
-    // ×記号と÷記号を*と/に変換
+    // ×記号と÷記号を*と/に変換、計算のため
     if (operator === "÷") {
         operator = "/";
     } else if (operator === "×") {
         operator = "*";
     }
+
     if (currentInput === "" && operator === "-" && previeousInput === "") {
         currentInput += operator;
         updateDisplay();
         return;
     }
+
     if (currentInput === "" && previeousInput === "") {
         return;
     }
+
     if (currentInput === "" && previeousInput) {
         currentInput = previeousInput;
     }
+
     if (currentInput) { // Guard against operator at the beginning
         currentInput += operator;
-        addToHistory({ formula: currentInput });
+        // const formulaToBeAdded = { formula: currentInput, terms: currentInput, result: "" };
+        addToHistory(currentInput, operator, "");
     }
     updateDisplay();
 }
@@ -118,6 +130,7 @@ function handleNumbers(number) {
         updateDisplay();
     }
     currentInput += number;
+    addToHistory(currentInput, number, "");
     updateDisplay();
     previeousInput = "";
 }
@@ -129,7 +142,7 @@ function handleButtonClick(buttonText) {
     } else if (buttonText === CLEAR) {
         handleClear();
     } else if (buttonText === EQUAL) {
-        handleEqual();
+        handleEqual(buttonText);
     } else if (OPERATORS.includes(buttonText)) {
         handleOperators(buttonText);
     } else if (buttonText === DECIMAL_POINT) {
@@ -138,9 +151,6 @@ function handleButtonClick(buttonText) {
         // 数字が押された場合
         handleNumbers(buttonText);
     }
-
-    console.log(currentInput)
-    console.log(calculationHistory)
 }
 
 

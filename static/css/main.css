@@ -22,7 +22,7 @@
 }
 .container {
     width: 400px;
-    height: 75vh;
+    height: 80%;
     box-shadow: 0 0 22px 8px gray;
 }
 
@@ -67,9 +67,10 @@
 }
 #result {
     text-align: right;
-    padding: 8px;
+    padding: 4px;
     font-size: 32px;
     font-family: 'courier', serif;
+    height: 40px;
     background-color: #ffffff;
 }
 #calculator-btns {
