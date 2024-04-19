@@ -90,7 +90,7 @@
     background-color: dodgerblue;
     color: white;
     font-size: 30px;
-    grid-column: span 2;
+    /* grid-column: span 2; */
 }
 #all-clear{
     background-color: tomato;
