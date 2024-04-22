@@ -70,23 +70,20 @@ function updateDisplay() {
 function constructTerm(currentInput) {
     // 数字かつ直前の項が数字の場合は、項に数字を追加
     console.log(currentInput);
-    if (currentInput.match(/\d+/) && term.match(/-?\d+/)) {
+    if (term.match(/-?\d+/) && currentInput.match(/\d+/)) {
         term += currentInput;
     // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加
-    } else if (currentInput.match(/\d+/) && term.match(/-?\d+\./)) {
+    } else if (term.match(/-?\d+\./) && currentInput.match(/\d+/)) {
         term += currentInput;
         return;
+    // 直前の項が+か-の場合は、項に数字を追加
+    } else if (term.match(/[\+\-]/) && currentInput.match(/\d+/)) {
+        let temp = currentTerms.pop();
+        term = temp + currentInput;
     // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加し、Arrayから直前の数字を削除
     } else if (currentInput === ".") {
         term += currentInput;
         currentTerms.pop();
-        return;
-    // 符号切り替えボタンが押された場合は、項に数字を追加
-    } else if (currentInput === TRANSFER_OPERATOR && term.match(/-?\d+/)) {
-        currentTerms[currentTerms.length - 1] = term * -1;
-        return;
-    // =が押された場合は項の追加をスキップ
-    } else if (currentInput === EQUAL) {
         return;
     } else {
         term = currentInput;
@@ -100,10 +97,24 @@ function constructTerm(currentInput) {
  * @param {String} result
  */
 function addToHistory(currentInput, result = "") {
-    constructTerm(currentInput);
-    // 入力された値が`+/-か=の場合はそのまま追加
+    // 入力された値が`+/-か=以外の場合はそのまま追加
     if (!(currentInput === TRANSFER_OPERATOR || currentInput === EQUAL)) {
+        constructTerm(currentInput);
         currentFormula.push(currentInput);
+    } else if (currentInput === TRANSFER_OPERATOR) { // 入力された値が+/-の場合
+        // 直前の項をマイナス変換
+        currentTerms[currentTerms.length - 1] = term * -1;
+        // 最後の数字をマイナス変換し、+か-の記号に当たればその符号を切り替え
+        let temp = currentFormula.pop();
+        while (!currentFormula[currentFormula.length - 1].match(/[\+\-\*\/]/)) {
+            temp += currentFormula.pop();
+        }
+        if (currentFormula[currentFormula.length - 1].match(/[\+\-]/)) { // this is might be wrong
+            currentFormula.pop();
+        }
+        currentFormula.push(temp * -1);
+        currentFormula.join("");
+        currentFormula.join(",");
     }
     // 履歴に挿入するJSONを作成
     item = { formula: currentFormula, terms: currentTerms, result: result };
@@ -213,6 +224,9 @@ function handleDecimalPoint(currentInputDecimalPoint) {
  * @param {String} currentInputTransferOperator
  */
 function handleTransferOperator(currentInputTransferOperator) {
+    if (!term[term.length - 1].match(/\d+/)) {
+        return;
+    }
     addToHistory(currentInputTransferOperator);
     updateDisplay();
 }
