@@ -5,12 +5,16 @@ let isWriteToNoteEnabled = true;
 
 const NOTE_CLEAR = "Note Clear";
 
-// ノートクリアのボタンを押した時の処理
+/**
+ * ノートクリアのボタンを押した時の処理
+ */
 function handleNoteClear() {
     resetHistory();
 }
 
-// ノートに書き込むかどうかを切り替える関数
+/**
+ * ノートに書き込むかどうかを切り替える関数
+ */
 function handleIsWriteToNoteEnabled() {
     isWriteToNoteEnabled = !isWriteToNoteEnabled;
     if (isWriteToNoteEnabled) {
@@ -22,7 +26,10 @@ function handleIsWriteToNoteEnabled() {
     }
 }
 
-// ノートのボタンを押した時の処理
+/**
+ * ノートのボタンを押した時の処理
+ * @param {String} buttonText
+ */
 function handleNoteButtonClick(buttonText) {
     if (buttonText === NOTE_CLEAR) {
         handleNoteClear();

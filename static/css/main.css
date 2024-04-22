@@ -5,7 +5,8 @@
     display: flex;
     justify-content: center;
 }
-#main-sections {
+
+#main-section {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -13,6 +14,11 @@
     background-color: #f0f0f0;
     gap: 8px;
 }
+
+#main-section:focus {
+    border: 1px solid lightblue;
+}
+
 .section{
     display: flex;
     justify-content: center;
@@ -20,30 +26,36 @@
     height: 100vh;
     background-color: #ffffff;
 }
+
 .container {
     width: 400px;
     height: 80%;
     box-shadow: 0 0 22px 8px gray;
 }
 
+
 /*note*/
 #note-section {
     display: flex;
     flex-direction: column;
 }
+
 #note-div{
     height: 100%;
 }
+
 #note-div li {
     list-style-type: none;
     padding: 8px;
     cursor: pointer;
 }
+
 #note-btns {
     display: grid;
     grid-template-columns: 1fr 1fr;
     border: 1px;
 }
+
 #note-btns .btn {
     border: .5px solid gray;
     background-color: #ffffff;
@@ -52,24 +64,39 @@
     cursor: pointer;
     padding: 8px;
 }
+
 #note-btns.btn:hover {
     background-color: lightgray;
 }
+
 #note-btns .btn:disabled {
     background-color: #999999;
 }
+
 #note-btns .write-to-note-enabled {
     background-color: lightgreen;
 }
 
+
 /*Calculator*/
+#display {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: right;
+    height: 84px;
+}
+
 #formula{
     text-align: right;
     padding: 8px;
     font-size: 24px;
     font-family: 'courier', serif;
     background-color: #ffffff;
+    width: 100%;
+    height: 100%;
 }
+
 #result {
     text-align: right;
     padding: 4px;
@@ -78,12 +105,14 @@
     height: 40px;
     background-color: #ffffff;
 }
+
 #calculator-btns {
     display: grid;
     border: 1px;
     border-top: 1px solid #999;
     grid-template-columns: 1fr 1fr 1fr 1fr;
 }
+
 #calculator-btns .btn {
     border: .5px solid gray;
     line-height: 100px;
@@ -91,28 +120,35 @@
     font-size: 20px;
     cursor: pointer;
 }
+
 #equal {
     background-color: dodgerblue;
     color: white;
     font-size: 30px;
     /* grid-column: span 2; */
 }
+
 #all-clear{
     background-color: tomato;
     color: white;
 }
+
 .btn:hover {
     background-color: lightgray;
 }
+
 #equal:hover{
     background-color: blue;
 }
+
 #all-clear:hover {
     background-color: red;
 }
+
 .num {
     background-color: #ffffff;
 }
+
 .num:disabled {
     background-color: #999999;
 }

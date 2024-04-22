@@ -1,7 +1,6 @@
 import { isWriteToNoteEnabled } from "./note.js";
 
-let formulaDiv = document.getElementById("formula");
-let resultDiv = document.getElementById("result");
+let formulaInput = document.getElementById("formula"); // button element
 let noteUl = document.getElementById("note-ul");
 
 // 定数
@@ -53,10 +52,15 @@ function reflectToNote() {
 
 /**
  * 計算式と答え部分を更新する関数
+ * @param {Boolean} answer
  */
-function updateDisplay() {
-    formulaDiv.innerText = currentFormula.join("") || "0";
-    resultDiv.innerText = resultValue;
+function updateDisplay(answer = false) {
+    formulaInput.textContent = "";
+    if (answer) {
+        formulaInput.textContent = resultValue;
+    } else {
+        formulaInput.textContent = currentFormula.join("") || "";
+    }
     // ノート書き込みが有効の場合は、ノートに反映
     if (isWriteToNoteEnabled) {
         reflectToNote();
@@ -68,19 +72,20 @@ function updateDisplay() {
  * @param {String} currentInput
  */
 function constructTerm(currentInput) {
-    // 数字かつ直前の項が数字の場合は、項に数字を追加
     console.log(currentInput);
-    if (term.match(/-?\d+/) && currentInput.match(/\d+/)) {
-        term += currentInput;
-    // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加
+
+    // 数字かつ直前の項が数字の場合は、項に数字を追加。または、直前の項が+か-の場合は、項に数字を追加
+    if (term.match(/-?\d+/) && currentInput.match(/\d+/) ||
+        (term.match(/[\+\-]/) && currentInput.match(/\d+/))) {
+        let temp = currentTerms.pop();
+        term = temp + currentInput;
+
+        // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加
     } else if (term.match(/-?\d+\./) && currentInput.match(/\d+/)) {
         term += currentInput;
         return;
-    // 直前の項が+か-の場合は、項に数字を追加
-    } else if (term.match(/[\+\-]/) && currentInput.match(/\d+/)) {
-        let temp = currentTerms.pop();
-        term = temp + currentInput;
-    // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加し、Arrayから直前の数字を削除
+
+        // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加し、currentTermsから直前の数字を削除
     } else if (currentInput === ".") {
         term += currentInput;
         currentTerms.pop();
@@ -101,21 +106,8 @@ function addToHistory(currentInput, result = "") {
     if (!(currentInput === TRANSFER_OPERATOR || currentInput === EQUAL)) {
         constructTerm(currentInput);
         currentFormula.push(currentInput);
-    } else if (currentInput === TRANSFER_OPERATOR) { // 入力された値が+/-の場合
-        // 直前の項をマイナス変換
-        currentTerms[currentTerms.length - 1] = term * -1;
-        // 最後の数字をマイナス変換し、+か-の記号に当たればその符号を切り替え
-        let temp = currentFormula.pop();
-        while (!currentFormula[currentFormula.length - 1].match(/[\+\-\*\/]/)) {
-            temp += currentFormula.pop();
-        }
-        if (currentFormula[currentFormula.length - 1].match(/[\+\-]/)) { // this is might be wrong
-            currentFormula.pop();
-        }
-        currentFormula.push(temp * -1);
-        currentFormula.join("");
-        currentFormula.join(",");
     }
+
     // 履歴に挿入するJSONを作成
     item = { formula: currentFormula, terms: currentTerms, result: result };
     calculationHistory[counter] = item;
@@ -166,7 +158,7 @@ function handleEqual(currentInputEqualSign) {
         console.log(error);
         resultValue = "ERROR";
     }
-    updateDisplay();
+    updateDisplay(true);
     previeousResultValue = resultValue; // 答えを直前の答えとして設定
     // 各変数をリセット
     resultValue = "";
@@ -227,6 +219,21 @@ function handleTransferOperator(currentInputTransferOperator) {
     if (!term[term.length - 1].match(/\d+/)) {
         return;
     }
+
+    // 直前の項をマイナス変換
+    currentTerms[currentTerms.length - 1] = term * -1;
+    // 最後の数字をマイナス変換し、+か-の記号に当たればその符号を切り替え
+    let temp = currentFormula.pop();
+    while (!currentFormula[currentFormula.length - 1].match(/[\+\-\*\/]/)) {
+        temp += currentFormula.pop();
+    }
+    if (currentFormula[currentFormula.length - 1].match(/[\+\-]/)) { // this is might be wrong
+        currentFormula.pop();
+    }
+    currentFormula.push(temp * -1);
+    currentFormula.join("");
+    currentFormula.join(",");
+
     addToHistory(currentInputTransferOperator);
     updateDisplay();
 }
@@ -277,4 +284,42 @@ document.querySelectorAll("#calculator-btns .btn").forEach((button) => {
     });
 });
 
+/**
+ * キーボードから数字が入力された場合の処理
+ * * formulaInputにフォーカスがある場合のみ処理を行う
+ */
+document.addEventListener("keydown", (event) => {
+    if (document.activeElement === formulaInput) {
+        switch (event.key) {
+            case "+":
+                handleOperators("+");
+                break;
+            case "-":
+                handleOperators("-");
+                break;
+            case "*":
+                handleOperators("×");
+                break;
+            case "/":
+                handleOperators("÷");
+                break;
+            case ".":
+                handleDecimalPoint(DECIMAL_POINT);
+                break;
+            case "Enter":
+                handleEqual(EQUAL);
+                break;
+            case "Backspace":
+                handleClear();
+                break;
+            default:
+                if (event.key.match(/\d/)) {
+                    handleNumbers(event.key);
+                }
+                break;
+        }
+    }
+});
+
+// export
 export { handleButtonClick, updateDisplay, resetHistory };
