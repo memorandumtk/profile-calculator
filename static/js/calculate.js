@@ -20,20 +20,35 @@ let previeousResultValue = ""; // 直前の結果を保持する変数
 let calculationHistory = []; // 計算履歴を保持する変数: Array
 let counter = 0; // 計算履歴のカウンターで履歴のインデックスとしても使用する
 let item = {}; // 計算式と答えと項の履歴を保持する変数: Object
-let currentTerms = []; // 項の履歴を保持する変数: Array
+let currentTerms = []; // 項の履歴を保持する変数。答えを求める値として使用: Array
 let term = ""; // 項を保持する変数
 
-// ノートに追加するリストを作成する関数
-function addToNote () {
-    let noteLi = document.createElement("li");
-    if (resultValue === "ERROR") {
-
-    } else if (resultValue === "") {
-        noteLi.innerText = currentFormula.join("");
-    } else if (resultValue) {
-        noteLi.innerText = currentFormula.join("") + " = " + resultValue;
+/**
+ * ノートに追加するリストを作成する関数
+ */
+function reflectToNote() {
+    noteUl.innerHTML = ""; // ノートのリストをリセット
+    for (let calculationList of calculationHistory) {
+        if (!calculationList) {
+            continue;
+        }
+        let noteLi = document.createElement("li");
+        if (calculationList.result === "") {
+            noteLi.innerText = calculationList.formula.join("");
+        } else {
+            noteLi.innerText = calculationList.formula.join("") + " = " + calculationList.result;
+        }
+        noteLi.addEventListener("click", (e) => {
+            // currentFormula.push(calculationList.result);
+            // currentTerms = calculationList.result ? calculationList.terms : [];
+            resultValue = calculationList.result;
+            // term = calculationList.result;
+            counter++;
+            addToHistory(resultValue.toString());
+            updateDisplay();
+        });
+        noteUl.appendChild(noteLi);
     }
-    noteUl.appendChild(noteLi);
 }
 
 /**
@@ -42,91 +57,119 @@ function addToNote () {
 function updateDisplay() {
     formulaDiv.innerText = currentFormula.join("") || "0";
     resultDiv.innerText = resultValue;
-
+    // ノート書き込みが有効の場合は、ノートに反映
     if (isWriteToNoteEnabled) {
-        addToNote();
+        reflectToNote();
     }
 }
 
-// 項を構成する関数
+/**
+ * 項を構成する関数 
+ * @param {String} currentInput
+ */
 function constructTerm(currentInput) {
-    console.log(currentInput.match(/\d+/))
-    if (currentInput.match(/\d/) && term.match(/-?[0-9]+/)) {
+    // 数字かつ直前の項が数字の場合は、項に数字を追加
+    console.log(currentInput);
+    if (currentInput.match(/\d+/) && term.match(/-?\d+/)) {
         term += currentInput;
-    } else if (currentInput.match(/\d/) && term.match(/-?[0-9]+\./)) {
+    // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加
+    } else if (currentInput.match(/\d+/) && term.match(/-?\d+\./)) {
         term += currentInput;
         return;
+    // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加し、Arrayから直前の数字を削除
     } else if (currentInput === ".") {
         term += currentInput;
         currentTerms.pop();
         return;
-    } else if (currentInput === TRANSFER_OPERATOR && term.match(/-?[0-9]+/)) {
+    // 符号切り替えボタンが押された場合は、項に数字を追加
+    } else if (currentInput === TRANSFER_OPERATOR && term.match(/-?\d+/)) {
         currentTerms[currentTerms.length - 1] = term * -1;
+        return;
+    // =が押された場合は項の追加をスキップ
+    } else if (currentInput === EQUAL) {
         return;
     } else {
         term = currentInput;
     }
     currentTerms.push(term);
-    return currentTerms;
 }
 
-// 履歴Arrayに計算式と答えが入ったJSONを格納する関数
+/**
+ * 履歴Arrayに計算式と答えが入ったJSONを格納する関数
+ * @param {String} currentInput
+ * @param {String} result
+ */
 function addToHistory(currentInput, result = "") {
     constructTerm(currentInput);
-
-    if (currentInput === TRANSFER_OPERATOR || currentInput === EQUAL) {
-    } else {
+    // 入力された値が`+/-か=の場合はそのまま追加
+    if (!(currentInput === TRANSFER_OPERATOR || currentInput === EQUAL)) {
         currentFormula.push(currentInput);
     }
-
+    // 履歴に挿入するJSONを作成
     item = { formula: currentFormula, terms: currentTerms, result: result };
     calculationHistory[counter] = item;
     console.log(...calculationHistory)
 }
 
-// 履歴Arrayをリセットする関数
+/**
+ * 履歴Arrayをリセットする関数
+ */
 function resetHistory() {
     calculationHistory = [];
     noteUl.innerHTML = "";
+    updateDisplay();
+    counter = 0;
 }
 
 
-// ACボタンが押された場合の処理
+/**
+ * ACボタンが押された場合の処理
+ */
 function handleAllClear() {
     currentFormula = [];
     currentTerms = [];
     resultValue = "";
     updateDisplay();
-    addToHistory({ formula: "Cleared" });
+    counter++;
 }
 
-// Cボタンが押された場合の処理
+/**
+ * Cボタンが押された場合の処理
+ */
 function handleClear() {
-    currentFormula.pop();
+    currentFormula.pop(); // 直前の文字を削除
+    // 直前の項を削除。最後の文字が数字の場合はそのまま削除し、それ以外はArrayから削除
     currentTerms[currentTerms.length - 1].length > 1 ? currentTerms[currentTerms.length - 1].slice(0, -1) : currentTerms.pop();
     updateDisplay();
 }
 
-// =ボタンが押された場合の処理
+/**
+ * =ボタンが押された場合の処理
+ * @param {String} currentInputEqualSign
+ */
 function handleEqual(currentInputEqualSign) {
     try {
-        resultValue = eval(currentTerms.join("")); // Consider a safer math library for production
+        resultValue = eval(currentTerms.join("")); // evalはリスク有り
         addToHistory(currentInputEqualSign, resultValue);
     } catch (error) {
         console.log(error);
         resultValue = "ERROR";
     }
-
-    previeousResultValue = resultValue; // Set new input after calculation
     updateDisplay();
+    previeousResultValue = resultValue; // 答えを直前の答えとして設定
+    // 各変数をリセット
     resultValue = "";
     currentFormula = [];
     currentTerms = [];
+    term = "";
     counter++;
 }
 
 
-// 演算子が押された場合の処理
+/**
+ * 演算子が押された場合の処理
+ * @param {String} currentInputOperator
+ */
 function handleOperators(currentInputOperator) {
     // ×記号と÷記号を*と/に変換、計算のため
     if (currentInputOperator === "÷") {
@@ -134,22 +177,30 @@ function handleOperators(currentInputOperator) {
     } else if (currentInputOperator === "×") {
         currentInputOperator = "*";
     }
-
-    if (currentFormula === "" && previeousResultValue === "") {
+    // 計算式が空で、且つ直前の結果が空の場合
+    if (currentFormula.length === 0 && previeousResultValue === "") {
         return;
     }
-
-    if (currentFormula === "" && previeousResultValue) {
-        currentFormula = previeousResultValue;
+    // 計算式が空で、直前の結果がある場合は直前の結果を計算式に追加
+    if (currentFormula.length === 0 && previeousResultValue !== "") {
+        console.log(previeousResultValue);
+        currentFormula.push(previeousResultValue);
+        term = previeousResultValue;
+        currentTerms.push(term);
+        addToHistory(currentInputOperator);
+        return;
     }
-
-    if (currentFormula) { // Guard against currentInputOperator at the beginning
+    // 計算式が空でないことを確認
+    if (currentFormula) {
         addToHistory(currentInputOperator);
     }
     updateDisplay();
 }
 
-// 小数点が押された場合の処理
+/**
+ * 小数点が押された場合の処理
+ * @param {String} currentInputDecimalPoint
+ */
 function handleDecimalPoint(currentInputDecimalPoint) {
     if (term.indexOf(currentInputDecimalPoint) === -1) {
         addToHistory(currentInputDecimalPoint);
@@ -157,23 +208,32 @@ function handleDecimalPoint(currentInputDecimalPoint) {
     }
 }
 
-// +-切り替えボタンが押された場合の処理
+/**
+ * +-切り替えボタンが押された場合の処理
+ * @param {String} currentInputTransferOperator
+ */
 function handleTransferOperator(currentInputTransferOperator) {
     addToHistory(currentInputTransferOperator);
     updateDisplay();
 }
 
-// 数字が押された場合の処理
+/**
+ * 数字が押された場合の処理
+ * @param {String} currentInputNumber
+ */
 function handleNumbers(currentInputNumber) {
-    if (resultValue && !previeousResultValue) { // 計算式が残っていたらリセットする
+    if (resultValue && previeousResultValue !== "") { // 計算式が残っていたらリセットする
         resultValue = "";
     }
     addToHistory(currentInputNumber);
     updateDisplay();
-    previeousResultValue = "";
+    previeousResultValue = ""; // 直前の式をリセット
 }
 
-// 押されたボタンによって処理を分岐
+/**
+ * 押されたボタンによって処理を分岐させるHandler関数
+ * @param {String} buttonText
+ */
 function handleButtonClick(buttonText) {
     currentInput = buttonText;
     if (currentInput === ALL_CLEAR) {
@@ -188,14 +248,15 @@ function handleButtonClick(buttonText) {
         handleDecimalPoint(currentInput);
     } else if (currentInput === TRANSFER_OPERATOR) {
         handleTransferOperator(currentInput);
-    } else if (currentInput.match(/[0-9]/)){ // 数字が押された場合
+    } else if (currentInput.match(/\d/)) { // 数字が押された場合
         handleNumbers(currentInput);
     }
-    
+
 }
 
-
-// 計算機のボタンにEvent Listenerを付ける
+/**
+ * 計算機のボタンにEvent Listenerを付ける
+ */
 document.querySelectorAll("#calculator-btns .btn").forEach((button) => {
     button.addEventListener("click", () => {
         handleButtonClick(button.innerText);

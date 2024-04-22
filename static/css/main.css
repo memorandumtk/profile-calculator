@@ -31,8 +31,13 @@
     display: flex;
     flex-direction: column;
 }
-.noteDiv{
+#note-div{
     height: 100%;
+}
+#note-div li {
+    list-style-type: none;
+    padding: 8px;
+    cursor: pointer;
 }
 #note-btns {
     display: grid;
