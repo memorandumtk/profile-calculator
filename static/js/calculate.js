@@ -58,7 +58,7 @@ function updateDisplay(answer = false) {
     if (answer) {
         formulaInput.textContent = resultValue;
     } else {
-        formulaInput.textContent = currentFormula.join("") || "";
+        formulaInput.textContent = currentFormula.join("") || "0";
     }
     // ノート書き込みが有効の場合は、ノートに反映
     if (isWriteToNoteEnabled) {
@@ -285,7 +285,7 @@ function handleButtonClick(buttonText) {
 /**
  * 計算機のボタンにEvent Listenerを付ける
  */
-document.querySelectorAll("#calculator-btns .btn").forEach((button) => {
+document.querySelectorAll("#calculator-btns-div .btn").forEach((button) => {
     button.addEventListener("click", () => {
         handleButtonClick(button.innerText);
     });
