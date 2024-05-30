@@ -73,7 +73,7 @@ function updateDisplay(answer = false) {
  */
 function constructTerm(currentInput) {
     console.log(currentInput, term);
-        
+
     // // 最初の入力とノートからの引用時
     // if (currentTerms.length === 0) {
     //     term = currentInput;
@@ -226,20 +226,28 @@ function handleTransferOperator(currentInputTransferOperator) {
         return;
     }
 
+    console.log('curentTerms', term)
+    console.log('currentTerms', currentTerms)
     // 直前の項をマイナス変換。currentTerms用
     currentTerms[currentTerms.length - 1] = term * -1;
     // 最後の数字をマイナス変換し、+か-の記号に当たればその符号を切り替え。currentFormula用
+    console.log('currentFormula')
+    console.log(currentFormula);
     let temp = currentFormula.pop();
-    while (!currentFormula[currentFormula.length - 1].match(/[\+\-\*\/]/)) {
-        temp += currentFormula.pop();
+    while (currentFormula.length > 0) {
+        if (currentFormula[currentFormula.length - 1].match(/[\+\-\*\/]/)) {
+            break;
+        }
+        temp = currentFormula.pop() + temp;
     }
-    if (currentFormula[currentFormula.length - 1].match(/[\+\-]/)) {
+    if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/[\+\-]/)) {
         currentFormula.pop();
     }
     // tempをマイナス変換してcurrentFormulaに追加。tempが複数の数字を持つ場合を考慮し、joinで1文字に分割後、再度結合。
     currentFormula.push(temp * -1);
     currentFormula.join("");
-    currentFormula.join(",");
+    console.log('currentFormula After')
+    console.log(currentFormula);
 
     addToHistory(currentInputTransferOperator);
     updateDisplay();
