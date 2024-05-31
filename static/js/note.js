@@ -1,5 +1,6 @@
 import { resetHistory } from "./calculate.js";
 
+let noteClearButton = document.querySelector("#trash-can-btn");
 let writeToNoteButton = document.querySelector("#write-to-note");
 let isWriteToNoteEnabled = true;
 let noteOutputEnableIcon = document.querySelector(".fa-toggle-on");
@@ -32,26 +33,16 @@ function handleIsWriteToNoteEnabled() {
     }
 }
 
-/**
- * ノートのボタンを押した時の処理
- * @param {String} buttonText
- */
-function handleNoteButtonClick(buttonText) {
-    if (buttonText === NOTE_CLEAR) {
-        handleNoteClear();
-    } else if (buttonText === writeToNoteButton.innerText){
-        handleIsWriteToNoteEnabled();
-    }
 
-}
+// ゴミ箱ボタンにEvent Listenerを付ける
+noteClearButton.addEventListener("click", () => {
+    handleNoteClear();
+})
+
+// ノート出力切り替えボタンにEvent Listenerを付ける
+writeToNoteButton.addEventListener("click", () => {
+    handleIsWriteToNoteEnabled();
+})
 
 
-// ノートのボタンにEvent Listenerを付ける
-document.querySelectorAll("#note-btns .btn").forEach((button) => {
-    button.addEventListener("click", () => {
-        handleNoteButtonClick(button.innerText);
-    });
-});
-
-
-export { handleNoteButtonClick, isWriteToNoteEnabled };
+export { isWriteToNoteEnabled };
