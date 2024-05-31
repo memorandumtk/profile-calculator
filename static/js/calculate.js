@@ -111,6 +111,8 @@ function addToHistory(currentInput, result = "") {
     if (!(currentInput === TRANSFER_OPERATOR || currentInput === EQUAL)) {
         constructTerm(currentInput);
         currentFormula.push(currentInput);
+    } else if (currentInput === TRANSFER_OPERATOR) {
+        currentTerms[currentTerms.length - 1] = term;
     }
 
     // 履歴に挿入するJSONを作成
@@ -240,12 +242,21 @@ function handleTransferOperator(currentInputTransferOperator) {
         }
         temp = currentFormula.pop() + temp;
     }
-    if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/[\+\-]/)) {
-        currentFormula.pop();
-    }
+    // if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/[\+]/)) {
+    //     currentFormula.pop();
+    // } else if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/[\-]/)) {
+    //     currentFormula[currentFormula.length - 1] = "+";
+    // }
     // tempをマイナス変換してcurrentFormulaに追加。tempが複数の数字を持つ場合を考慮し、joinで1文字に分割後、再度結合。
-    currentFormula.push(temp * -1);
-    currentFormula.join("");
+    term = temp * -1;
+    let concatenatedTemp = term.toString().split("");
+    if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/\+/) && concatenatedTemp[0] === "-") {
+        currentFormula.pop();
+    } else if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/\-/) && concatenatedTemp[0] === "-"){
+        currentFormula[currentFormula.length - 1] = "+";
+        concatenatedTemp = concatenatedTemp.slice(1);
+    }
+    currentFormula.push(...concatenatedTemp);
     console.log('currentFormula After')
     console.log(currentFormula);
 
