@@ -45,4 +45,4 @@ writeToNoteButton.addEventListener("click", () => {
 })
 
 
-export { isWriteToNoteEnabled };
+export { isWriteToNoteEnabled, handleNoteClear };

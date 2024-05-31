@@ -1,4 +1,4 @@
-import { isWriteToNoteEnabled } from "./note.js";
+import { isWriteToNoteEnabled, handleNoteClear } from "./note.js";
 
 let formulaInput = document.getElementById("formula"); // button element
 let noteUl = document.getElementById("note-ul");
@@ -137,11 +137,18 @@ function resetHistory() {
  * ACボタンが押された場合の処理
  */
 function handleAllClear() {
+    // 計算履歴Arrayのresultが空の場合（一回目の計算が行われていない場合）はすべてリセット。
+    if (calculationHistory[0].result === "") {
+        currentTerms = [];
+        currentFormula = [];
+        resetHistory();
+        return;
+    }
+    calculationHistory.pop(); // 直前の計算履歴を削除
     currentFormula = [];
     currentTerms = [];
     resultValue = "";
     updateDisplay();
-    counter++;
 }
 
 /**
