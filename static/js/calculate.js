@@ -93,6 +93,7 @@ function constructTerm(currentInput) {
     } else if (currentInput === ".") {
         term += currentInput;
         currentTerms.pop();
+        currentTerms.push(term);
         return;
     } else {
         term = currentInput;
@@ -156,8 +157,9 @@ function handleAllClear() {
  */
 function handleClear() {
     currentFormula.pop(); // 直前の文字を削除
-    // 直前の項を削除。最後の文字が数字の場合はそのまま削除し、それ以外はArrayから削除
-    currentTerms[currentTerms.length - 1].length > 1 ? currentTerms[currentTerms.length - 1].slice(0, -1) : currentTerms.pop();
+    // 直前の項の最後の文字を削除。
+    const trimmedTerm = currentTerms[currentTerms.length - 1].slice(0, -1);
+    currentTerms[currentTerms.length - 1] = trimmedTerm;
     updateDisplay();
 }
 
