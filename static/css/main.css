@@ -101,12 +101,22 @@
   border-radius: 1rem;
 }
 
-#note-div li {
+#note-ul {
+  padding: 1rem;
+}
+
+#note-ul li {
   list-style-type: none;
-  padding: 8px;
   cursor: pointer;
   font-weight: 700;
   font-size: 1.5rem;
+  padding: 0.5rem;
+}
+
+#note-div li:hover {
+  background-color: #d1e5f0;
+  border: #67a7cc 1px solid;
+  border-radius: 5px;
 }
 
 /*Calculator*/
