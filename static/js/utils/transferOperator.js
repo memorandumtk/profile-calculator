@@ -11,7 +11,11 @@ function transferOperator(currentFormula) {
     console.log('temp from transferOperator: ', temp)
     console.log('current formula from transferOperator: ', currentFormula)
     // 変換後の項に格納し、currentFormulaに追加
-    if (currentFormula[currentFormula.length - 1].match(/[\*\/]/) && temp[0] === "-"){
+    if (currentFormula.length === 0 && temp[0] === "-") {
+        temp.shift();
+    } else if (currentFormula.length === 0) {
+        temp.unshift("-");
+    } else if (currentFormula[currentFormula.length - 1].match(/[\*\/]/) && temp[0] === "-"){
         temp.shift();
     } else if (currentFormula[currentFormula.length - 1].match(/[\*\/]/)){
         temp.unshift("-");
