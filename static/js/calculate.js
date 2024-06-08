@@ -1,4 +1,7 @@
 import { isWriteToNoteEnabled, handleNoteClear } from "./note.js";
+import { transferOperator } from "./utils/transferOperator.js";
+import { addToHistory } from "./utils/addToHistory.js";
+import { constructTerm } from "./utils/constructTerm.js";
 
 let formulaInput = document.getElementById("formula"); // button element
 let noteUl = document.getElementById("note-ul");
@@ -18,7 +21,6 @@ let resultValue = ""; // 計算結果を保持する変数
 let previeousResultValue = ""; // 直前の結果を保持する変数
 let calculationHistory = []; // 表示用の計算式を保持する変数: Array
 let counter = 0; // 計算履歴のカウンターで履歴のインデックスとしても使用する
-let item = {}; // 計算式と答えと項の履歴を保持する変数: Object
 let currentTerms = []; // 項の履歴を保持する変数。答えを求める値として使用: Array
 let term = ""; // 項を保持する変数
 
@@ -42,7 +44,7 @@ function reflectToNote() {
             currentInput = calculationList.result.toString();
             term = calculationList.result.toString();
             counter++;
-            addToHistory(currentInput, resultValue);
+            ({term, currentTerms, currentFormula, calculationHistory, counter} = addToHistory(term, currentTerms, currentFormula, calculationHistory, counter, currentInput, resultValue));
             updateDisplay();
         });
         noteUl.appendChild(noteLi);
@@ -64,63 +66,6 @@ function updateDisplay(answer = false) {
     if (isWriteToNoteEnabled) {
         reflectToNote();
     }
-}
-
-/**
- * important function
- * 項を構成する関数
- * @param {String} currentInput
- */
-function constructTerm(currentInput) {
-    console.log(currentInput, term);
-
-    // // 最初の入力とノートからの引用時
-    // if (currentTerms.length === 0) {
-    //     term = currentInput;
-    // }
-    // 数字かつ直前の項が数字の場合は、項に数字を追加。または、直前の項が+か-の場合は、項に数字を追加
-    if (term.match(/-?\d+/) && currentInput.match(/\d+/) ||
-        (term.match(/[\+\-]/) && currentInput.match(/\d+/))) {
-        let temp = currentTerms.length > 0 ? currentTerms.pop() : "";
-        term = temp + currentInput;
-
-        // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加
-    } else if (term.match(/-?\d+\./) && currentInput.match(/\d+/)) {
-        term += currentInput;
-        return;
-
-        // 数字かつ直前の項が小数点を含む数字の場合は、項に数字を追加し、currentTermsから直前の数字を削除
-    } else if (currentInput === ".") {
-        term += currentInput;
-        currentTerms.pop();
-        currentTerms.push(term);
-        return;
-    } else {
-        term = currentInput;
-    }
-    currentTerms.push(term);
-}
-
-/**
- * important function
- * 履歴Arrayに計算式と答えが入ったJSONを格納する関数
- * @param {String} currentInput
- * @param {String} result
- */
-function addToHistory(currentInput, result = "") {
-    // 入力された値が`+/-か=以外の場合はそのまま追加
-    if (!(currentInput === TRANSFER_OPERATOR || currentInput === EQUAL)) {
-        constructTerm(currentInput);
-        currentFormula.push(currentInput);
-    } else if (currentInput === TRANSFER_OPERATOR) {
-        currentTerms[currentTerms.length - 1] = term;
-    }
-
-    // 履歴に挿入するJSONを作成
-    item = { formula: currentFormula, terms: currentTerms, result: result };
-    // counterをインデックスとして使用することで、履歴を保持しノートから再度表示・使用できるようにする
-    calculationHistory[counter] = item;
-    console.log(...calculationHistory)
 }
 
 /**
@@ -170,7 +115,7 @@ function handleClear() {
 function handleEqual(currentInputEqualSign) {
     try {
         resultValue = eval(currentTerms.join("")); // evalはリスク有りのため、後で修正する必要があるかも
-        addToHistory(currentInputEqualSign, resultValue);
+        ({term, currentTerms, currentFormula, calculationHistory, counter} = addToHistory(term, currentTerms, currentFormula, calculationHistory, counter, currentInputEqualSign, resultValue));
     } catch (error) {
         console.log(error);
         resultValue = "ERROR";
@@ -207,12 +152,12 @@ function handleOperators(currentInputOperator) {
         currentFormula.push(previeousResultValue);
         term = previeousResultValue;
         currentTerms.push(term);
-        addToHistory(currentInputOperator);
+        ({term, currentTerms, currentFormula, calculationHistory, counter} = addToHistory(term, currentTerms, currentFormula, calculationHistory, counter, currentInputOperator));
         return;
     }
     // 計算式が空でないことを確認
     if (currentFormula) {
-        addToHistory(currentInputOperator);
+        ({term, currentTerms, currentFormula, calculationHistory, counter} = addToHistory(term, currentTerms, currentFormula, calculationHistory, counter, currentInputOperator));
     }
     updateDisplay();
 }
@@ -223,7 +168,7 @@ function handleOperators(currentInputOperator) {
  */
 function handleDecimalPoint(currentInputDecimalPoint) {
     if (term.indexOf(currentInputDecimalPoint) === -1) {
-        addToHistory(currentInputDecimalPoint);
+        ({term, currentTerms, currentFormula, calculationHistory, counter} = addToHistory(term, currentTerms, currentFormula, calculationHistory, counter, currentInputDecimalPoint));
         updateDisplay();
     }
 }
@@ -233,48 +178,11 @@ function handleDecimalPoint(currentInputDecimalPoint) {
  * @param {String} currentInputTransferOperator
  */
 function handleTransferOperator(currentInputTransferOperator) {
-    if (!term[term.length - 1].match(/\d+/)) {
+    if (currentTerms.length === 0) {
         return;
     }
-
-    console.log('curentTerms', term)
-    console.log('currentTerms', currentTerms)
-    // 対象の項を取得する。+か-の記号に当たればその符号を切り替え。currentFormula用
-    let temp = currentFormula.pop();
-    while (currentFormula.length > 0) {
-        if (currentFormula[currentFormula.length - 1].match(/[\+\-\*\/]/)) {
-            if (currentFormula[currentFormula.length - 2].match(/[\+\-\*\/]/)) {
-                temp = currentFormula.pop() + temp;
-            }
-            break;
-        }
-        temp = currentFormula.pop() + temp;
-    }
-
-    // tempをマイナス変換してcurrentFormulaに追加。tempが複数の数字を持つ場合を考慮し、joinで1文字に分割後、再度結合。
-    temp = temp * -1;
-    // 返還後の項をconcatenatedTempに格納し、currentFormulaに追加
-    let concatenatedTemp = temp.toString().split("");
-    if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/\+/) && concatenatedTemp[0] === "-") {
-        currentFormula.pop();
-    } else if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/\-/) && concatenatedTemp[0] === "-") {
-        currentFormula[currentFormula.length - 1] = "+";
-        concatenatedTemp.shift();
-        // concatenatedTemp = concatenatedTemp.slice(1);
-    } else if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/[\*\/]/) && concatenatedTemp[0] === "+") {
-        concatenatedTemp.shift();
-    } else if (currentFormula.length > 0 && currentFormula[currentFormula.length - 1].match(/[\*\/]/) && concatenatedTemp[0] === "-") {
-        concatenatedTemp.unshift('(');
-        concatenatedTemp.push(')');
-    }
-    concatenatedTemp = concatenatedTemp.join("");
-    currentFormula.push(concatenatedTemp);
-    console.log('currentFormula After')
-    console.log(currentFormula);
-    term = (concatenatedTemp[0] === "+") ? concatenatedTemp : "+" + concatenatedTemp;
-    currentTerms[currentTerms.length - 1] = term;
-
-    addToHistory(currentInputTransferOperator);
+    ({term, currentTerms, currentFormula} = transferOperator(term, currentTerms, currentFormula));
+    ({term, currentTerms, currentFormula, calculationHistory, counter} = addToHistory(term, currentTerms, currentFormula, calculationHistory, counter, currentInputTransferOperator));
     updateDisplay();
 }
 
@@ -286,7 +194,7 @@ function handleNumbers(currentInputNumber) {
     if (resultValue && previeousResultValue !== "") { // 計算式が残っていたらリセットする
         resultValue = "";
     }
-    addToHistory(currentInputNumber);
+    ({term, currentTerms, currentFormula, calculationHistory, counter} = addToHistory(term, currentTerms, currentFormula, calculationHistory, counter, currentInputNumber));
     updateDisplay();
     previeousResultValue = ""; // 直前の式をリセット
 }
